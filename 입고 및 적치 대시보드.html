@@ -1,0 +1,601 @@
+<!DOCTYPE html><html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입고 및 적치 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }    body {
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+
+    .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 40px;
+    }
+
+    .title {
+        font-size: 42px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .subtitle {
+        font-size: 16px;
+        opacity: 0.95;
+    }
+
+    /* KPI 카드 - 큰 수치 */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+    }
+
+    .kpi-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .kpi-label {
+        font-size: 13px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .kpi-value {
+        font-size: 42px;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+        line-height: 1;
+    }
+
+    .kpi-unit {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .kpi-detail {
+        font-size: 12px;
+        color: #999;
+        margin-top: 10px;
+    }
+
+    .badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* 차트 그리드 */
+    .chart-section {
+        margin-bottom: 30px;
+    }
+
+    .chart-section-title {
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .chart-grid-main {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .chart-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+
+    .chart-container:hover {
+        box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+    }
+
+    .chart-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #f0f0f0;
+    }
+
+    .chart {
+        width: 100%;
+        height: 380px;
+        min-height: 380px;
+    }
+
+    .chart-small {
+        height: 320px;
+        min-height: 320px;
+    }
+
+    /* 통계 섹션 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-box {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .stat-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        color: #1a1a1a;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .stat-value.highlight {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+
+    @media (max-width: 1200px) {
+        .chart-grid-2 {
+            grid-template-columns: 1fr;
+        }
+        
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .container {
+            padding: 15px 10px;
+        }
+
+        .title {
+            font-size: 28px;
+        }
+
+        .kpi-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+        }
+
+        .chart {
+            height: 300px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="title">📦 입고 및 적치 대시보드</div>
+            <div class="subtitle">2026년 5월 실시간 모니터링 | 최종 집계</div>
+        </div>    <!-- 핵심 KPI 카드 -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon">📥</div>
+            <div class="kpi-label">총 입고</div>
+            <div class="kpi-value">367,239</div>
+            <div class="kpi-unit">개</div>
+            <div class="kpi-detail">총 26일 누적</div>
+            <div class="badge">평년 대비 +12%</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">📤</div>
+            <div class="kpi-label">총 적치</div>
+            <div class="kpi-value">367,239</div>
+            <div class="kpi-unit">개</div>
+            <div class="kpi-detail">100% 처리</div>
+            <div class="badge">완료</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-label">처리율</div>
+            <div class="kpi-value">99.95%</div>
+            <div class="kpi-unit">%</div>
+            <div class="kpi-detail">미처리: 1,712개</div>
+            <div class="badge">우수</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">🏭</div>
+            <div class="kpi-label">지점별</div>
+            <div class="kpi-value">2개</div>
+            <div class="kpi-unit">지점</div>
+            <div class="kpi-detail">이천1: 90% / 용인2: 10%</div>
+            <div class="badge" style="background: linear-gradient(135deg, #f093fb, #f5576c);">주의</div>
+        </div>
+    </div>
+
+    <!-- 주요 차트 -->
+    <div class="chart-section">
+        <div class="chart-section-title">📈 시계열 분석</div>
+        <div class="chart-grid-main">
+            <div class="chart-container">
+                <div class="chart-title">일자별 입고 vs 적치 추이</div>
+                <div class="chart" id="timeSeriesChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 비교 차트 -->
+    <div class="chart-section">
+        <div class="chart-section-title">📊 성과 비교</div>
+        <div class="chart-grid-2">
+            <div class="chart-container">
+                <div class="chart-title">지점별 입고 수량</div>
+                <div class="chart chart-small" id="locationChart"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">미처리 이월 현황</div>
+                <div class="chart chart-small" id="carryoverChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 누적 처리 현황 -->
+    <div class="chart-section">
+        <div class="chart-section-title">⚙️ 처리 현황</div>
+        <div class="chart-grid-main">
+            <div class="chart-container">
+                <div class="chart-title">일자별 적치 및 미처리 누적</div>
+                <div class="chart" id="processChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 요약 -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-title">📌 이천1 성과</div>
+            <div class="stat-row">
+                <span class="stat-label">입고 수량</span>
+                <span class="stat-value highlight">331,392개</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">적치 수량</span>
+                <span class="stat-value">331,392개</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">미처리 이월</span>
+                <span class="stat-value">1,712개</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 99.5%"></div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">📌 용인2 성과</div>
+            <div class="stat-row">
+                <span class="stat-label">입고 수량</span>
+                <span class="stat-value highlight">35,847개</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">적치 수량</span>
+                <span class="stat-value">35,847개</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">미처리 이월</span>
+                <span class="stat-value">4개</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 99.9%"></div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-title">🎯 주요 지표</div>
+            <div class="stat-row">
+                <span class="stat-label">평균 일일 입고</span>
+                <span class="stat-value highlight">14,124개</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">최대 입고일</span>
+                <span class="stat-value">2026-05-22</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">최소 입고일</span>
+                <span class="stat-value">2026-05-02</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">전체 처리율</span>
+                <span class="stat-value highlight">99.95%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const data = [
+        { date: '2026-05-01', cheon1In: 13721, cheon1Out: 13721, yongin2In: 2990, yongin2Out: 2990, carryover: 0 },
+        { date: '2026-05-02', cheon1In: 5112, cheon1Out: 4479, yongin2In: 0, yongin2Out: 0, carryover: 633 },
+        { date: '2026-05-03', cheon1In: 3966, cheon1Out: 4599, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-04', cheon1In: 5415, cheon1Out: 5415, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-05', cheon1In: 0, cheon1Out: 0, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-06', cheon1In: 13041, cheon1Out: 13041, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-07', cheon1In: 21323, cheon1Out: 21323, yongin2In: 2976, yongin2Out: 2975, carryover: 1 },
+        { date: '2026-05-08', cheon1In: 25864, cheon1Out: 25864, yongin2In: 2998, yongin2Out: 2999, carryover: 0 },
+        { date: '2026-05-09', cheon1In: 7302, cheon1Out: 7302, yongin2In: 2999, yongin2Out: 2999, carryover: 0 },
+        { date: '2026-05-10', cheon1In: 5261, cheon1Out: 5261, yongin2In: 2771, yongin2Out: 2771, carryover: 0 },
+        { date: '2026-05-11', cheon1In: 7927, cheon1Out: 7927, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-12', cheon1In: 12957, cheon1Out: 12636, yongin2In: 0, yongin2Out: 0, carryover: 321 },
+        { date: '2026-05-13', cheon1In: 21274, cheon1Out: 21593, yongin2In: 3001, yongin2Out: 3001, carryover: 2 },
+        { date: '2026-05-14', cheon1In: 22923, cheon1Out: 22610, yongin2In: 2995, yongin2Out: 2995, carryover: 315 },
+        { date: '2026-05-15', cheon1In: 23049, cheon1Out: 23363, yongin2In: 6152, yongin2Out: 6150, carryover: 1 },
+        { date: '2026-05-16', cheon1In: 7578, cheon1Out: 7579, yongin2In: 0, yongin2Out: 2, carryover: 0 },
+        { date: '2026-05-17', cheon1In: 4478, cheon1Out: 4478, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-18', cheon1In: 13112, cheon1Out: 12677, yongin2In: 0, yongin2Out: 0, carryover: 435 },
+        { date: '2026-05-19', cheon1In: 14933, cheon1Out: 15368, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-20', cheon1In: 22356, cheon1Out: 22354, yongin2In: 2967, yongin2Out: 2966, carryover: 2 },
+        { date: '2026-05-21', cheon1In: 21019, cheon1Out: 21018, yongin2In: 3007, yongin2Out: 3008, carryover: 3 },
+        { date: '2026-05-22', cheon1In: 26441, cheon1Out: 26444, yongin2In: 2991, yongin2Out: 2991, carryover: 0 },
+        { date: '2026-05-23', cheon1In: 7861, cheon1Out: 7861, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-24', cheon1In: 4853, cheon1Out: 4853, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-25', cheon1In: 9415, cheon1Out: 9415, yongin2In: 0, yongin2Out: 0, carryover: 0 },
+        { date: '2026-05-26', cheon1In: 10211, cheon1Out: 10211, yongin2In: 0, yongin2Out: 0, carryover: 0 }
+    ];
+
+    const chartColors = {
+        primary: '#667eea',
+        secondary: '#764ba2',
+        success: '#2ecc71',
+        warning: '#f5576c',
+        danger: '#ff6b6b'
+    };
+
+    // 시계열 차트
+    const timeSeriesChart = echarts.init(document.getElementById('timeSeriesChart'));
+    const dates = data.map(d => d.date.slice(5));
+    const incomingData = data.map(d => d.cheon1In + d.yongin2In);
+    const outgoingData = data.map(d => d.cheon1Out + d.yongin2Out);
+
+    timeSeriesChart.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(50, 50, 50, 0.9)', borderColor: '#333', textStyle: { color: '#fff' } },
+        legend: { data: ['입고수량', '적치수량'], top: 'top', textStyle: { color: '#666' } },
+        xAxis: { type: 'category', data: dates, boundaryGap: false, axisLabel: { fontSize: 11, color: '#999' }, axisLine: { lineStyle: { color: '#ddd' } } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#999' }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
+        series: [
+            {
+                name: '입고수량',
+                data: incomingData,
+                type: 'line',
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 6,
+                itemStyle: { color: chartColors.primary },
+                areaStyle: { color: 'rgba(102, 126, 234, 0.15)' },
+                lineStyle: { width: 3 }
+            },
+            {
+                name: '적치수량',
+                data: outgoingData,
+                type: 'line',
+                smooth: true,
+                symbol: 'circle',
+                symbolSize: 6,
+                itemStyle: { color: chartColors.success },
+                areaStyle: { color: 'rgba(46, 204, 113, 0.15)' },
+                lineStyle: { width: 3 }
+            }
+        ]
+    });
+
+    // 지점별 비교
+    const locationChart = echarts.init(document.getElementById('locationChart'));
+    const cheon1Total = data.reduce((sum, d) => sum + d.cheon1In, 0);
+    const yongin2Total = data.reduce((sum, d) => sum + d.yongin2In, 0);
+
+    locationChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['입고수량', '적치수량'], textStyle: { color: '#666' } },
+        xAxis: { type: 'category', data: ['이천1', '용인2'], axisLabel: { fontSize: 12, color: '#666' }, axisLine: { lineStyle: { color: '#ddd' } } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#999' }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
+        series: [
+            {
+                name: '입고수량',
+                data: [cheon1Total, yongin2Total],
+                type: 'bar',
+                itemStyle: { color: chartColors.primary },
+                barWidth: '40%'
+            },
+            {
+                name: '적치수량',
+                data: [
+                    data.reduce((sum, d) => sum + d.cheon1Out, 0),
+                    data.reduce((sum, d) => sum + d.yongin2Out, 0)
+                ],
+                type: 'bar',
+                itemStyle: { color: chartColors.success },
+                barWidth: '40%'
+            }
+        ]
+    });
+
+    // 미처리 이월
+    const carryoverChart = echarts.init(document.getElementById('carryoverChart'));
+    const carryoverData = data.filter(d => d.carryover > 0);
+
+    carryoverChart.setOption({
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: carryoverData.map(d => d.date.slice(5)), axisLabel: { fontSize: 11, color: '#999' }, axisLine: { lineStyle: { color: '#ddd' } } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#999' }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
+        series: [
+            {
+                data: carryoverData.map(d => d.carryover),
+                type: 'bar',
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#f5576c' },
+                        { offset: 1, color: '#ff6b6b' }
+                    ])
+                },
+                barWidth: '50%'
+            }
+        ]
+    });
+
+    // 누적 처리
+    const processChart = echarts.init(document.getElementById('processChart'));
+    processChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['적치완료', '미처리 이월'], textStyle: { color: '#666' } },
+        xAxis: { type: 'category', data: dates, boundaryGap: true, axisLabel: { fontSize: 10, color: '#999', interval: 2 }, axisLine: { lineStyle: { color: '#ddd' } } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#999' }, splitLine: { lineStyle: { color: '#f0f0f0' } } },
+        series: [
+            {
+                name: '적치완료',
+                data: outgoingData,
+                type: 'bar',
+                stack: 'total',
+                itemStyle: { color: chartColors.success },
+                barWidth: '60%'
+            },
+            {
+                name: '미처리 이월',
+                data: data.map(d => d.carryover),
+                type: 'bar',
+                stack: 'total',
+                itemStyle: { color: chartColors.warning },
+                barWidth: '60%'
+            }
+        ]
+    });
+
+    window.addEventListener('resize', () => {
+        timeSeriesChart.resize();
+        locationChart.resize();
+        carryoverChart.resize();
+        processChart.resize();
+    });
+</script>
+</body>
+</html>
