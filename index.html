@@ -1,0 +1,272 @@
+<!DOCTYPE html><html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>크림 입고&적치 실적 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <style>
+        #ft-dashboard-container,#ft-dashboard-container *{box-sizing:border-box;margin:0;padding:0;border:0;background:transparent;color:inherit;font-family:inherit;line-height:1.45;list-style:none;text-decoration:none}
+        #ft-dashboard-container{font-family:"Inter","Noto Sans KR",system-ui,sans-serif;color:#182033}
+        #ft-dashboard-container button,#ft-dashboard-container input{font:inherit}
+        #ft-dashboard-container .ft-shell{min-height:100vh;padding:22px;background:radial-gradient(circle at 16% 0%,rgba(67,118,255,.18),transparent 30%),radial-gradient(circle at 88% 4%,rgba(20,184,166,.14),transparent 28%),linear-gradient(135deg,#f7f9fc 0%,#edf3ff 46%,#f6f8fb 100%)}
+        #ft-dashboard-container .ft-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:1.25fr .75fr;gap:22px;margin-bottom:16px;padding:26px;border:1px solid rgba(33,52,92,.12);border-radius:18px;background:linear-gradient(135deg,#101b3d 0%,#1e3a8a 48%,#0f766e 100%);box-shadow:0 18px 45px rgba(21,38,84,.18)}
+        #ft-dashboard-container .ft-hero:before{content:"";position:absolute;inset:auto -80px -120px auto;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.13)}
+        #ft-dashboard-container .ft-eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;padding:5px 10px;border:1px solid rgba(255,255,255,.28);border-radius:999px;color:#dceafe;font-size:12px;font-weight:800}
+        #ft-dashboard-container .ft-title{position:relative;color:#fff;font-size:30px;font-weight:900;letter-spacing:0}
+        #ft-dashboard-container .ft-title strong{color:#8ff7df}
+        #ft-dashboard-container .ft-sub{position:relative;margin-top:8px;color:#c9d8ff;font-size:13px;font-weight:600}
+        #ft-dashboard-container .ft-hero-side{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-self:end}
+        #ft-dashboard-container .ft-chip{padding:14px;border-radius:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff}
+        #ft-dashboard-container .ft-chip-label{font-size:11px;color:#c9d8ff;font-weight:800}
+        #ft-dashboard-container .ft-chip-val{margin-top:3px;font-family:"JetBrains Mono",monospace;font-size:19px;font-weight:900}
+        #ft-dashboard-container .ft-topbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+        #ft-dashboard-container .ft-view,#ft-dashboard-container .ft-dates{display:flex;gap:7px;flex-wrap:wrap}
+        #ft-dashboard-container .ft-vbtn,#ft-dashboard-container .ft-dbtn{cursor:pointer;border-radius:10px;border:1px solid #d9e2f3;background:#fff;padding:8px 13px;color:#475569;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(28,45,80,.05);transition:.16s}
+        #ft-dashboard-container .ft-vbtn:hover,#ft-dashboard-container .ft-dbtn:hover{transform:translateY(-1px);border-color:#3867ff;color:#1d4ed8}
+        #ft-dashboard-container .ft-active{background:#1d4ed8!important;border-color:#1d4ed8!important;color:#fff!important;box-shadow:0 10px 22px rgba(29,78,216,.22)!important}
+        #ft-dashboard-container .ft-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:14px}
+        #ft-dashboard-container .ft-kpi{min-height:112px;padding:17px;border-radius:14px;border:1px solid #dfe7f3;background:#fff;box-shadow:0 8px 22px rgba(25,40,72,.07)}
+        #ft-dashboard-container .ft-kpi small{display:block;margin-bottom:8px;color:#64748b;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.4px}
+        #ft-dashboard-container .ft-kpi b{display:block;color:#101827;font-family:"JetBrains Mono",monospace;font-size:22px;font-weight:900;white-space:nowrap}
+        #ft-dashboard-container .ft-kpi em{display:block;margin-top:6px;color:#8190a6;font-size:12px;font-style:normal;font-weight:700}
+        #ft-dashboard-container .ft-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+        #ft-dashboard-container .ft-panel{border-radius:15px;border:1px solid #dfe7f3;background:#fff;padding:18px;box-shadow:0 8px 22px rgba(25,40,72,.07)}
+        #ft-dashboard-container .ft-panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:#1e3a8a;font-size:14px;font-weight:900}
+        #ft-dashboard-container .ft-muted{color:#94a3b8;font-size:12px;font-weight:700}
+        #ft-dashboard-container .ft-pl{display:grid;gap:7px}
+        #ft-dashboard-container .ft-pl-row{display:grid;grid-template-columns:140px 1fr 120px;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;background:#f8fafc;font-size:13px;font-weight:800}
+        #ft-dashboard-container .ft-bar{height:9px;border-radius:999px;background:#e8eef7;overflow:hidden}
+        #ft-dashboard-container .ft-bar span{display:block;height:100%;border-radius:999px}
+        #ft-dashboard-container .ft-money{text-align:right;font-family:"JetBrains Mono",monospace;font-weight:900}
+        #ft-dashboard-container .ft-table-wrap{border-radius:15px;border:1px solid #dfe7f3;background:#fff;padding:18px;box-shadow:0 8px 22px rgba(25,40,72,.07)}
+        #ft-dashboard-container .ft-scroll{max-height:500px;overflow:auto;border-radius:11px;border:1px solid #edf2f7}
+        #ft-dashboard-container table{width:100%;border-collapse:collapse;font-size:12px}
+        #ft-dashboard-container th{position:sticky;top:0;background:#172554;color:#fff;padding:10px 9px;text-align:center;font-weight:900;white-space:nowrap;cursor:pointer}
+        #ft-dashboard-container td{padding:9px;border-bottom:1px solid #eef2f7;color:#334155;white-space:nowrap;text-align:right}
+        #ft-dashboard-container td:first-child{text-align:left;font-weight:800;color:#172033}
+        #ft-dashboard-container tr:hover td{background:#f8fafc}
+        #ft-dashboard-container .ft-trend{display:grid;grid-template-columns:repeat(25,1fr);gap:3px;height:150px;align-items:end;padding-top:18px}
+        #ft-dashboard-container .ft-trend-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;cursor:pointer}
+        #ft-dashboard-container .ft-trend-bar{width:100%;min-height:4px;border-radius:6px;background:#2563eb}
+        #ft-dashboard-container .ft-trend-lbl{font-size:9px;color:#64748b;font-weight:900}
+        #ft-dashboard-container .ft-empty{padding:48px;border-radius:14px;border:2px dashed #cbd5e1;background:#fff;color:#94a3b8;text-align:center;font-weight:800}
+        #ft-dashboard-container .ft-foot{padding:18px 0 4px;text-align:center;color:#94a3b8;font-size:11px;font-weight:700}
+        #ft-dashboard-container .ft-warn{margin-bottom:14px;padding:12px 14px;border-radius:12px;border:1px solid #fecaca;background:#fff1f2;color:#be123c;font-size:13px;font-weight:700}
+        #ft-dashboard-container .ft-upbtn{cursor:pointer;padding:8px 14px;border-radius:10px;background:#0f766e;color:#fff;font-size:12px;font-weight:900;border:none;margin-right:10px}
+        #ft-dashboard-container .ft-upbtn:hover{background:#0d5e56}
+        @media(max-width:980px){#ft-dashboard-container .ft-hero,#ft-dashboard-container .ft-grid2{grid-template-columns:1fr}#ft-dashboard-container .ft-kpis{grid-template-columns:repeat(3,1fr)}}
+        @media(max-width:640px){#ft-dashboard-container .ft-shell{padding:12px}#ft-dashboard-container .ft-title{font-size:23px}#ft-dashboard-container .ft-hero-side,#ft-dashboard-container .ft-kpis{grid-template-columns:1fr}#ft-dashboard-container .ft-pl-row{grid-template-columns:1fr}#ft-dashboard-container .ft-money{text-align:left}}
+    </style>
+</head>
+<body>
+    <div id="ft-dashboard-container"></div>
+    <script>
+        (function(){
+            var container = document.getElementById("ft-dashboard-container");        var MONTH_PAGES = {
+            5: {pageId: null, fileName: "2026-05 CO.xlsx"}
+        };
+        
+        var state = {
+            activeDate: null,
+            cache: {},
+            loading: null,
+            error: null,
+            search: "",
+            sort: "일자",
+            dir: "desc"
+        };
+        
+        var MONTH_KO = ["","1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+        
+        function esc(v) {
+            var d = document.createElement("div");
+            d.textContent = String(v == null ? "" : v);
+            return d.innerHTML;
+        }
+        
+        function fmt(n) {
+            return Math.round(Number(n || 0)).toLocaleString("ko-KR");
+        }
+        
+        function rate(a, b) {
+            return b ? Math.round(a / b * 1000) / 10 : 0;
+        }
+        
+        // 샘플 5월 데이터
+        var MAY_DATA = [            {date: '2026-05-01', icheon1_inbound: 13721, icheon1_storage: 13721, yongin2_inbound: 2990, yongin2_storage: 2990, total_inbound: 16711, carryover: 0},            {date: '2026-05-02', icheon1_inbound: 5112, icheon1_storage: 4479, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 5112, carryover: 633},            {date: '2026-05-03', icheon1_inbound: 3966, icheon1_storage: 4599, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 3966, carryover: 0},            {date: '2026-05-04', icheon1_inbound: 5415, icheon1_storage: 5415, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 5415, carryover: 0},            {date: '2026-05-06', icheon1_inbound: 13041, icheon1_storage: 13041, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 13041, carryover: 0},            {date: '2026-05-07', icheon1_inbound: 21323, icheon1_storage: 21323, yongin2_inbound: 2976, yongin2_storage: 2975, total_inbound: 24299, carryover: 1},            {date: '2026-05-08', icheon1_inbound: 25864, icheon1_storage: 25864, yongin2_inbound: 2998, yongin2_storage: 2999, total_inbound: 28862, carryover: 0},            {date: '2026-05-09', icheon1_inbound: 7302, icheon1_storage: 7302, yongin2_inbound: 2999, yongin2_storage: 2999, total_inbound: 10301, carryover: 0},            {date: '2026-05-10', icheon1_inbound: 5261, icheon1_storage: 5261, yongin2_inbound: 2771, yongin2_storage: 2771, total_inbound: 8032, carryover: 0},            {date: '2026-05-11', icheon1_inbound: 7927, icheon1_storage: 7927, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 7927, carryover: 0},            {date: '2026-05-12', icheon1_inbound: 12957, icheon1_storage: 12636, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 12957, carryover: 321},            {date: '2026-05-13', icheon1_inbound: 21274, icheon1_storage: 21593, yongin2_inbound: 3001, yongin2_storage: 3001, total_inbound: 24275, carryover: 2},            {date: '2026-05-14', icheon1_inbound: 22923, icheon1_storage: 22610, yongin2_inbound: 2995, yongin2_storage: 2995, total_inbound: 25918, carryover: 315},            {date: '2026-05-15', icheon1_inbound: 23049, icheon1_storage: 23363, yongin2_inbound: 6152, yongin2_storage: 6150, total_inbound: 29201, carryover: 1},            {date: '2026-05-16', icheon1_inbound: 7578, icheon1_storage: 7579, yongin2_inbound: 0, yongin2_storage: 2, total_inbound: 7578, carryover: 0},            {date: '2026-05-17', icheon1_inbound: 4478, icheon1_storage: 4478, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 4478, carryover: 0},            {date: '2026-05-18', icheon1_inbound: 13112, icheon1_storage: 12677, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 13112, carryover: 435},            {date: '2026-05-19', icheon1_inbound: 14933, icheon1_storage: 15368, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 14933, carryover: 0},            {date: '2026-05-20', icheon1_inbound: 22356, icheon1_storage: 22354, yongin2_inbound: 2967, yongin2_storage: 2966, total_inbound: 25323, carryover: 2},            {date: '2026-05-21', icheon1_inbound: 21019, icheon1_storage: 21018, yongin2_inbound: 3007, yongin2_storage: 3008, total_inbound: 24026, carryover: 3},            {date: '2026-05-22', icheon1_inbound: 26441, icheon1_storage: 26444, yongin2_inbound: 2991, yongin2_storage: 2991, total_inbound: 29432, carryover: 0},            {date: '2026-05-23', icheon1_inbound: 7861, icheon1_storage: 7861, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 7861, carryover: 0},            {date: '2026-05-24', icheon1_inbound: 4853, icheon1_storage: 4853, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 4853, carryover: 0},            {date: '2026-05-25', icheon1_inbound: 9415, icheon1_storage: 9415, yongin2_inbound: 0, yongin2_storage: 0, total_inbound: 9415, carryover: 0}        ];
+        
+        function calcTotals() {
+            var t = {total_inbound: 0, total_storage: 0, avg_storage_rate: 0, max_daily: 0, carryover_total: 0};
+            MAY_DATA.forEach(function(d) {
+                t.total_inbound += d.total_inbound;
+                t.total_storage += (d.icheon1_storage + d.yongin2_storage);
+                t.carryover_total += d.carryover;
+                t.max_daily = Math.max(t.max_daily, d.total_inbound);
+            });
+            t.avg_storage_rate = rate(t.total_storage, t.total_inbound);
+            return t;
+        }
+        
+        function hero() {
+            var totals = calcTotals();
+            return '<div class="ft-hero"><div><div class="ft-eyebrow">📊 Inbound & Storage Management</div><div class="ft-title">크림 입고&적치 <strong>실적 현황</strong></div><div class="ft-sub">5월 일자별 입고 현황 · 이천1·용인2센터 실시간 모니터링</div></div><div class="ft-hero-side"><div class="ft-chip"><div class="ft-chip-label">총 입고</div><div class="ft-chip-val">'+fmt(totals.total_inbound)+'</div></div><div class="ft-chip"><div class="ft-chip-label">총 적치</div><div class="ft-chip-val">'+fmt(totals.total_storage)+'</div></div><div class="ft-chip"><div class="ft-chip-label">적치율</div><div class="ft-chip-val">'+totals.avg_storage_rate+'%</div></div><div class="ft-chip"><div class="ft-chip-label">이월</div><div class="ft-chip-val">'+fmt(totals.carryover_total)+'</div></div></div></div>';
+        }
+        
+        function kpi(label, val, sub, color) {
+            return '<div class="ft-kpi" style="border-top:4px solid ' + color + '"><small>' + label + '</small><b style="color:' + color + '">' + val + '</b><em>' + sub + '</em></div>';
+        }
+        
+        function nav() {
+            var html = '<div class="ft-topbar"><div class="ft-view"><button class="ft-vbtn ft-active">📋 일자별 현황</button></div><div class="ft-dates">';
+            MAY_DATA.forEach(function(d, i) {
+                var day = d.date.split('-')[2];
+                html += '<button class="ft-dbtn' + (state.activeDate === d.date ? ' ft-active' : '') + '" data-date="' + d.date + '">' + day + '일</button>';
+            });
+            html += '</div></div>';
+            return html;
+        }
+        
+        function dailyDetail() {
+            var d = MAY_DATA.find(function(x) { return x.date === state.activeDate; }) || MAY_DATA[0];
+            if (!state.activeDate) state.activeDate = d.date;
+            
+            var icheon_total = d.icheon1_inbound + d.icheon1_storage;
+            var yongin_total = d.yongin2_inbound + d.yongin2_storage;
+            var storage_rate = rate(d.icheon1_storage + d.yongin2_storage, d.total_inbound);
+            
+            var html = '<div class="ft-kpis">';
+            html += kpi('📦 입고 수량', fmt(d.total_inbound), '당일 총 입고량', '#2563eb');
+            html += kpi('🏢 적치 수량', fmt(d.icheon1_storage + d.yongin2_storage), '당일 총 적치량', '#0f766e');
+            html += kpi('📈 적치율', storage_rate + '%', '입고 대비 적치율', '#7c3aed');
+            html += kpi('⏳ 미처리 이월', fmt(d.carryover), '다음일 이월건', '#ea580c');
+            html += kpi('🏭 이천1', fmt(d.icheon1_inbound), '입고: ' + fmt(d.icheon1_inbound), '#2563eb');
+            html += kpi('🏭 용인2', fmt(d.yongin2_inbound), '입고: ' + fmt(d.yongin2_inbound), '#10b981');
+            html += '</div>';
+            
+            html += '<div class="ft-grid2">';
+            html += '<div class="ft-panel"><div class="ft-panel-title">센터별 입고·적치<span class="ft-muted">상세 현황</span></div><div class="ft-pl">';
+            var rows = [                ['이천1 입고', d.icheon1_inbound, '#2563eb'],
+                ['이천1 적치', d.icheon1_storage, '#0f766e'],
+                ['용인2 입고', d.yongin2_inbound, '#10b981'],
+                ['용인2 적치', d.yongin2_storage, '#059669']
+            ];
+            var max = Math.max(1, d.total_inbound);
+            rows.forEach(function(r) {
+                var w = Math.min(100, r[1] / max * 100);
+                html += '<div class="ft-pl-row"><span>' + r[0] + '</span><div class="ft-bar"><span style="width:' + w + '%;background:' + r[2] + '"></span></div><span class="ft-money" style="color:' + r[2] + '">' + fmt(r[1]) + '</span></div>';
+            });
+            html += '</div></div>';
+            
+            html += '<div class="ft-panel"><div class="ft-panel-title">일별 통계<span class="ft-muted">5월 기준</span></div><div class="ft-pl">';
+            var totals = calcTotals();
+            var stats = [                ['월평균', Math.round(totals.total_inbound / MAY_DATA.length), '#2563eb'],
+                ['최고입고', totals.max_daily, '#0f766e'],
+                ['평균적치율', totals.avg_storage_rate, '#7c3aed'],
+                ['누적이월', totals.carryover_total, '#ea580c']
+            ];
+            stats.forEach(function(s) {
+                var w = Math.min(100, s[1] / totals.max_daily * 100);
+                html += '<div class="ft-pl-row"><span>' + s[0] + '</span><div class="ft-bar"><span style="width:' + w + '%;background:' + s[2] + '"></span></div><span class="ft-money" style="color:' + s[2] + '">' + fmt(s[1]) + '</span></div>';
+            });
+            html += '</div></div></div>';
+            
+            return html;
+        }
+        
+        function monthlyTrend() {
+            var html = '<div class="ft-panel"><div class="ft-panel-title">5월 입고 추이 (25일)<span class="ft-muted">일별 현황</span></div><div class="ft-trend">';
+            var max = calcTotals().max_daily;
+            MAY_DATA.forEach(function(d) {
+                var h = Math.max(5, d.total_inbound / max * 100);
+                html += '<div class="ft-trend-col" data-date-jump="' + d.date + '"><div class="ft-trend-bar" style="height:' + h + '%"></div><div class="ft-trend-lbl">' + d.date.split('-')[2] + '</div></div>';
+            });
+            html += '</div></div>';
+            return html;
+        }
+        
+        function detailTable() {
+            var list = MAY_DATA.slice();
+            list.sort(function(a, b) {
+                var av = a[state.sort] || 0;
+                var bv = b[state.sort] || 0;
+                if (state.sort === '일자') {
+                    return state.dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+                }
+                return state.dir === 'asc' ? av - bv : bv - av;
+            });
+            
+            var html = '<div class="ft-table-wrap"><div class="ft-panel-title">일자별 상세 실적<span class="ft-muted">' + list.length + '일</span></div><div class="ft-scroll"><table><thead><tr>';
+            var cols = [                ['일자', '일자'],
+                ['이천1 입고', 'icheon1_inbound'],
+                ['이천1 적치', 'icheon1_storage'],
+                ['용인2 입고', 'yongin2_inbound'],
+                ['용인2 적치', 'yongin2_storage'],
+                ['총 입고', 'total_inbound'],
+                ['적치율', 'storage_rate'],
+                ['이월건', 'carryover']
+            ];
+            cols.forEach(function(c) {
+                html += '<th data-sort="' + c[1] + '">' + c[0] + (state.sort === c[1] ? (state.dir === 'asc' ? ' ▲' : ' ▼') : '') + '</th>';
+            });
+            html += '</tr></thead><tbody>';
+            
+            list.forEach(function(d) {
+                var sr = rate(d.icheon1_storage + d.yongin2_storage, d.total_inbound);
+                html += '<tr><td>' + d.date + '</td>';
+                html += '<td>' + fmt(d.icheon1_inbound) + '</td>';
+                html += '<td>' + fmt(d.icheon1_storage) + '</td>';
+                html += '<td>' + fmt(d.yongin2_inbound) + '</td>';
+                html += '<td>' + fmt(d.yongin2_storage) + '</td>';
+                html += '<td style="color:#2563eb;font-weight:900">' + fmt(d.total_inbound) + '</td>';
+                html += '<td style="color:#0f766e;font-weight:900">' + sr + '%</td>';
+                html += '<td style="color:' + (d.carryover > 0 ? '#dc2626' : '#059669') + ';font-weight:900">' + fmt(d.carryover) + '</td>';
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div></div>';
+            return html;
+        }
+        
+        function render() {
+            var html = '<div class="ft-shell">' + hero() + nav() + dailyDetail() + monthlyTrend() + detailTable() + '<div class="ft-foot">크림 입고&적치 실적 대시보드 · ' + new Date().toLocaleDateString("ko-KR") + '</div></div>';
+            container.innerHTML = html;
+            bind();
+        }
+        
+        function bind() {
+            container.querySelectorAll("[data-date]").forEach(function(b) {
+                b.onclick = function() {
+                    state.activeDate = b.getAttribute("data-date");
+                    render();
+                };
+            });
+            
+            container.querySelectorAll("[data-date-jump]").forEach(function(b) {
+                b.onclick = function() {
+                    state.activeDate = b.getAttribute("data-date-jump");
+                    render();
+                };
+            });
+            
+            container.querySelectorAll("th[data-sort]").forEach(function(th) {
+                th.onclick = function() {
+                    var s = th.getAttribute("data-sort");
+                    if (state.sort === s) {
+                        state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        state.sort = s;
+                        state.dir = 'desc';
+                    }
+                    render();
+                };
+            });
+        }
+        
+        render();
+        state.activeDate = MAY_DATA[0].date;
+        render();
+    })();
+</script>
+</body>
+</html>
